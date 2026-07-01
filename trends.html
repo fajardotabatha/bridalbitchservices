@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BBS Trends">
+<meta name="theme-color" content="#111111">
+<title>BBS Trend Monitor</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,600;1,300&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:#111;color:rgba(255,255,255,0.88);font-family:'Jost',sans-serif;font-weight:300;overflow:hidden}
+body{display:flex;flex-direction:column;padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+
+.hdr{background:#111;display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem 0.75rem;border-bottom:0.5px solid rgba(255,255,255,0.1);flex-shrink:0}
+.hdr-logo{font-family:'Cormorant Garamond',serif;font-size:1.1rem;font-weight:600;letter-spacing:0.12em;text-transform:uppercase;color:#fff}
+.hdr-logo span{color:#C9A84C}
+.hdr-sub{font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(255,255,255,0.35);margin-top:2px}
+.hdr-right{display:flex;align-items:center;gap:0.6rem}
+.ts{font-size:0.62rem;color:rgba(255,255,255,0.3);letter-spacing:0.04em}
+.rfbtn{width:36px;height:36px;border-radius:50%;border:0.5px solid rgba(201,168,76,0.5);background:transparent;color:#C9A84C;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.2s}
+.rfbtn:active{background:#C9A84C;color:#111;transform:scale(0.93)}
+.rfbtn.spin{animation:spinning 1s linear infinite}
+@keyframes spinning{to{transform:rotate(360deg)}}
+
+.tabs{display:flex;background:#111;border-bottom:0.5px solid rgba(255,255,255,0.1);flex-shrink:0}
+.tab{flex:1;padding:0.7rem;font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;text-align:center;cursor:pointer;color:rgba(255,255,255,0.35);border:none;background:transparent;font-family:inherit;border-bottom:2px solid transparent;transition:all 0.15s}
+.tab.on{color:#C9A84C;border-bottom-color:#C9A84C}
+
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#111;padding:0.75rem 1rem 2rem}
+.scroll::-webkit-scrollbar{display:none}
+
+/* TODAY CARDS */
+.section-label{font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:rgba(255,255,255,0.3);margin:0.75rem 0 0.5rem;padding:0 0.25rem}
+.card{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:1rem 1rem 0.85rem;margin-bottom:0.65rem;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%;background:#C9A84C;opacity:0.5}
+.card-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:0.4rem}
+.card-cat{font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:#C9A84C}
+.card-platform{font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05);padding:2px 7px;border-radius:10px}
+.card-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;color:#fff;line-height:1.25;margin-bottom:0.4rem}
+.card-meta{font-size:0.78rem;color:rgba(255,255,255,0.45);line-height:1.6;margin-bottom:0.55rem}
+.card-idea{font-size:0.78rem;color:rgba(255,255,255,0.6);line-height:1.6;padding:0.55rem 0.75rem;background:rgba(201,168,76,0.06);border-left:2px solid #C9A84C}
+.card-idea b{color:#C9A84C;font-weight:500}
+.card-actions{display:flex;gap:0.5rem;margin-top:0.75rem}
+.abtn{flex:1;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;border:0.5px solid rgba(255,255,255,0.12);padding:0.4rem 0;cursor:pointer;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;border-radius:8px;transition:all 0.15s;text-align:center}
+.abtn:active{border-color:#C9A84C;color:#C9A84C;background:rgba(201,168,76,0.08)}
+
+/* MOMENTUM CARDS */
+.mom-card{background:#1a1a1a;border:0.5px solid rgba(255,255,255,0.08);border-radius:14px;padding:1rem;margin-bottom:0.65rem;display:flex;gap:0.85rem;align-items:center}
+.mom-score{min-width:48px;height:48px;border-radius:50%;border:1.5px solid #C9A84C;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.mom-days{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:#C9A84C;line-height:1}
+.mom-label{font-size:0.5rem;letter-spacing:0.1em;text-transform:uppercase;color:rgba(201,168,76,0.6)}
+.mom-body{}
+.mom-cat{font-size:0.58rem;letter-spacing:0.16em;text-transform:uppercase;color:#C9A84C;margin-bottom:3px}
+.mom-name{font-size:0.92rem;font-weight:400;color:#fff;line-height:1.3;margin-bottom:3px}
+.mom-platforms{font-size:0.7rem;color:rgba(255,255,255,0.35)}
+.hot-badge{display:inline-block;font-size:0.55rem;letter-spacing:0.12em;text-transform:uppercase;background:rgba(201,168,76,0.15);color:#C9A84C;border:0.5px solid rgba(201,168,76,0.3);padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle}
+
+/* EMPTY */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:3rem 2rem;text-align:center;min-height:250px}
+.empty-icon{font-family:'Cormorant Garamond',serif;font-size:2rem;color:#C9A84C;margin-bottom:0.85rem}
+.empty-title{font-size:0.9rem;color:#fff;margin-bottom:0.4rem;font-weight:400}
+.empty-sub{font-size:0.78rem;color:rgba(255,255,255,0.35);line-height:1.7;max-width:240px}
+
+/* SHEET */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,0.8);z-index:50;opacity:0;transition:opacity 0.2s;pointer-events:none}
+.overlay.on{opacity:1;pointer-events:all}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:#1c1c1c;border-radius:20px 20px 0 0;z-index:51;padding:0 1.25rem calc(1.5rem + env(safe-area-inset-bottom));max-height:82vh;overflow-y:auto;transform:translateY(100%);transition:transform 0.28s ease}
+.sheet.on{transform:translateY(0)}
+.sheet-handle{width:36px;height:4px;background:rgba(255,255,255,0.12);border-radius:2px;margin:0.85rem auto 1.1rem}
+.sheet-tag{font-size:0.6rem;letter-spacing:0.18em;text-transform:uppercase;color:#C9A84C;margin-bottom:0.35rem}
+.sheet-title{font-family:'Cormorant Garamond',serif;font-size:1.3rem;font-weight:300;color:#fff;margin-bottom:1rem;line-height:1.3}
+.sheet-content{font-size:0.85rem;color:rgba(255,255,255,0.6);line-height:1.9;white-space:pre-wrap}
+.sheet-loading{text-align:center;padding:2rem;color:rgba(255,255,255,0.3);font-size:0.85rem}
+.sheet-footer{display:flex;gap:0.75rem;margin-top:1.25rem;padding-top:1rem;border-top:0.5px solid rgba(255,255,255,0.08)}
+.sbtn{flex:1;font-size:0.7rem;letter-spacing:0.08em;text-transform:uppercase;border:0.5px solid rgba(255,255,255,0.15);padding:0.6rem;cursor:pointer;background:transparent;color:rgba(255,255,255,0.45);font-family:inherit;border-radius:10px}
+.sbtn.gold{border-color:#C9A84C;color:#C9A84C}
+.sbtn:active{background:rgba(255,255,255,0.05)}
+.sbtn.gold:active{background:rgba(201,168,76,0.1)}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div>
+    <div class="hdr-logo">BBS <span>✦</span> Trends</div>
+    <div class="hdr-sub">Wedding trend monitor</div>
+  </div>
+  <div class="hdr-right">
+    <span class="ts" id="ts"></span>
+    <button class="rfbtn" id="rfbtn" onclick="refresh()" aria-label="Refresh trends">↻</button>
+  </div>
+</div>
+
+<div class="tabs">
+  <button class="tab on" id="tab-today" onclick="switchTab('today')">Today</button>
+  <button class="tab" id="tab-momentum" onclick="switchTab('momentum')">Momentum</button>
+</div>
+
+<div class="scroll" id="scroll">
+  <div id="today-view">
+    <div class="empty">
+      <div class="empty-icon">✦</div>
+      <div class="empty-title">Ready to scan</div>
+      <div class="empty-sub">Tap ↻ to pull today's wedding trends from Instagram, TikTok & Pinterest.</div>
+    </div>
+  </div>
+  <div id="momentum-view" style="display:none"></div>
+</div>
+
+<div class="overlay" id="overlay" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-tag" id="s-tag"></div>
+  <div class="sheet-title" id="s-title"></div>
+  <div id="s-body"></div>
+  <div class="sheet-footer">
+    <button class="sbtn" onclick="closeSheet()">Close</button>
+    <button class="sbtn gold" id="copy-btn" onclick="copyContent()">Copy</button>
+  </div>
+</div>
+
+<script>
+// ── State ──────────────────────────────────────────────────────────
+let todayTrends = [];
+let sheetText = '';
+let currentTab = 'today';
+
+// ── Storage helpers ────────────────────────────────────────────────
+function getHistory() {
+  try { return JSON.parse(localStorage.getItem('bbs-history') || '[]'); } catch(e) { return []; }
+}
+function saveHistory(h) {
+  try { localStorage.setItem('bbs-history', JSON.stringify(h.slice(0, 500))); } catch(e) {}
+}
+function getMomentum() {
+  const history = getHistory();
+  const counts = {};
+  history.forEach(entry => {
+    entry.trends.forEach(t => {
+      const key = t.name.toLowerCase().trim();
+      if (!counts[key]) counts[key] = { name: t.name, category: t.category, days: 0, platforms: new Set(), lastSeen: entry.date };
+      counts[key].days++;
+      counts[key].platforms.add(t.platform || 'Instagram');
+      if (entry.date > counts[key].lastSeen) counts[key].lastSeen = entry.date;
+    });
+  });
+  return Object.values(counts)
+    .filter(t => t.days >= 2)
+    .sort((a, b) => b.days - a.days)
+    .map(t => ({ ...t, platforms: Array.from(t.platforms).join(', ') }));
+}
+
+// ── Tab switching ──────────────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('on'));
+  document.getElementById('tab-' + tab).classList.add('on');
+  document.getElementById('today-view').style.display = tab === 'today' ? 'block' : 'none';
+  document.getElementById('momentum-view').style.display = tab === 'momentum' ? 'block' : 'none';
+  if (tab === 'momentum') renderMomentum();
+}
+
+// ── Render today ────────────────────────────────────────────────────
+function catLabel(c) {
+  return { audio: '🎵 Audio', aesthetic: '✨ Aesthetic', diy: '🌸 DIY & Decor', content: '📱 Content' }[c] || c;
+}
+
+function renderToday() {
+  const el = document.getElementById('today-view');
+  if (!todayTrends.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">No trends loaded</div><div class="empty-sub">Tap ↻ to scan for today's wedding trends.</div></div>`;
+    return;
+  }
+  const groups = { audio: [], aesthetic: [], diy: [], content: [] };
+  todayTrends.forEach(t => { if (groups[t.category]) groups[t.category].push(t); });
+  let html = '';
+  Object.entries(groups).forEach(([cat, list]) => {
+    if (!list.length) return;
+    html += `<div class="section-label">${catLabel(cat)}</div>`;
+    list.forEach((t, i) => {
+      const idx = todayTrends.indexOf(t);
+      html += `<div class="card">
+        <div class="card-top">
+          <div class="card-cat">${catLabel(t.category)}</div>
+          <div class="card-platform">${t.platform || 'Instagram'}</div>
+        </div>
+        <div class="card-name">${t.name}</div>
+        <div class="card-meta">${t.meta}</div>
+        <div class="card-idea"><b>Your idea:</b> ${t.idea}</div>
+        <div class="card-actions">
+          <div class="abtn" onclick="scriptIt(${idx})">✍ Script</div>
+          <div class="abtn" onclick="captionIt(${idx})">💬 Caption</div>
+        </div>
+      </div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+// ── Render momentum ─────────────────────────────────────────────────
+function renderMomentum() {
+  const el = document.getElementById('momentum-view');
+  const momentum = getMomentum();
+  if (!momentum.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Building momentum data</div><div class="empty-sub">Check back daily and trends that keep appearing will show up here with their momentum score.</div></div>`;
+    return;
+  }
+  let html = `<div class="section-label">Recurring trends — sorted by momentum</div>`;
+  momentum.forEach(t => {
+    const isHot = t.days >= 4;
+    html += `<div class="mom-card">
+      <div class="mom-score">
+        <div class="mom-days">${t.days}</div>
+        <div class="mom-label">days</div>
+      </div>
+      <div class="mom-body">
+        <div class="mom-cat">${catLabel(t.category)}</div>
+        <div class="mom-name">${t.name}${isHot ? '<span class="hot-badge">🔥 Hot</span>' : ''}</div>
+        <div class="mom-platforms">${t.platforms}</div>
+      </div>
+    </div>`;
+  });
+  el.innerHTML = html;
+}
+
+// ── Fetch trends ────────────────────────────────────────────────────
+async function refresh() {
+  const btn = document.getElementById('rfbtn');
+  btn.classList.add('spin');
+  btn.disabled = true;
+  document.getElementById('today-view').innerHTML = `<div class="empty"><div class="empty-icon" style="animation:spinning 1.5s linear infinite;display:inline-block">✦</div><div class="empty-title" style="margin-top:0.85rem">Scanning trends...</div><div class="empty-sub">Pulling from Instagram, TikTok & Pinterest right now.</div></div>`;
+
+  try {
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1400,
+        tools: [{ type: 'web_search_20250305', name: 'web_search' }],
+        messages: [{
+          role: 'user',
+          content: `Search the web RIGHT NOW for the most current wedding trends on Instagram Reels, TikTok, and Pinterest as of today. Search for: "trending wedding TikTok ${new Date().toLocaleDateString('en-US',{month:'long',year:'numeric'})}", "wedding Instagram Reels audio trending now", "wedding Pinterest trends 2026", "bridal DIY trends TikTok".
+
+You are a trend curator for Bridal Bitch Services — a bilingual budget wedding creative consulting business on Long Island that makes: custom invitations, signage, bar menus, matchboxes, keychains, t-shirts, tote bags, bridal party items, coasters, event favors, and custom stickers.
+
+Based on your web search results, return ONLY a valid JSON array (no markdown, no backticks) with exactly 10 current trending items. Mix categories evenly: "audio", "aesthetic", "diy", "content".
+
+Each object must have exactly:
+{
+  "name": "specific trend name 3-6 words",
+  "category": "audio|aesthetic|diy|content",
+  "platform": "Instagram|TikTok|Pinterest|All",
+  "meta": "2 sentences: what it is and why it is trending right now based on your search",
+  "idea": "one specific actionable Reel or TikTok idea for Bridal Bitch Services using their actual products"
+}`
+        }]
+      })
+    });
+
+    const data = await resp.json();
+    const text = data.content.filter(b => b.type === 'text').map(b => b.text).join('');
+    const clean = text.replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(clean);
+    todayTrends = parsed;
+
+    // Save to history
+    const today = new Date().toISOString().split('T')[0];
+    const history = getHistory().filter(e => e.date !== today);
+    history.unshift({ date: today, trends: parsed });
+    saveHistory(history);
+
+    renderToday();
+    document.getElementById('ts').textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+  } catch (e) {
+    document.getElementById('today-view').innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Couldn't load trends</div><div class="empty-sub">Check your connection and tap ↻ to try again.</div></div>`;
+  }
+
+  btn.classList.remove('spin');
+  btn.disabled = false;
+}
+
+// ── Sheet ───────────────────────────────────────────────────────────
+function openSheet(tag, title) {
+  document.getElementById('s-tag').textContent = tag;
+  document.getElementById('s-title').textContent = title;
+  document.getElementById('s-body').innerHTML = `<div class="sheet-loading">✦ Generating...</div>`;
+  document.getElementById('overlay').classList.add('on');
+  document.getElementById('sheet').classList.add('on');
+  sheetText = '';
+}
+function closeSheet() {
+  document.getElementById('overlay').classList.remove('on');
+  document.getElementById('sheet').classList.remove('on');
+}
+async function generateContent(tag, title, prompt) {
+  openSheet(tag, title);
+  try {
+    const r = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 800,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+    const d = await r.json();
+    sheetText = d.content.map(b => b.text || '').join('');
+    document.getElementById('s-body').innerHTML = `<div class="sheet-content">${sheetText}</div>`;
+  } catch (e) {
+    document.getElementById('s-body').innerHTML = `<div class="sheet-loading">Something went wrong. Close and try again.</div>`;
+  }
+}
+
+function scriptIt(idx) {
+  const t = todayTrends[idx];
+  generateContent('✍️ Reel Script', t.name,
+    `Write a punchy Instagram Reel script for Bridal Bitch Services — a bilingual budget wedding creative consulting business on Long Island. Trend: "${t.name}". Content idea: ${t.idea}. Brand voice: confident, direct, no fluff, budget-savvy, real bride energy.
+
+Format:
+HOOK (first 3 seconds):
+
+SCENE 1:
+
+SCENE 2:
+
+SCENE 3:
+
+SCENE 4:
+
+CTA:
+Book free consult → calendly.com/bridalbitch | @bridalbitchservices`
+  );
+}
+
+function captionIt(idx) {
+  const t = todayTrends[idx];
+  generateContent('💬 Caption', t.name,
+    `Write an Instagram caption for Bridal Bitch Services using the trend: "${t.name}". Brand: bilingual budget wedding creative consulting Long Island. Confident, direct, no fluff.
+
+CAPTION:
+[2-4 punchy sentences ending with CTA to book free consult at calendly.com/bridalbitch]
+
+HASHTAGS:
+[12 hashtags — wedding, Long Island, budget bride, product-specific]
+
+BEST TIME TO POST:
+[day and time]`
+  );
+}
+
+async function copyContent() {
+  if (!sheetText) return;
+  try {
+    await navigator.clipboard.writeText(sheetText);
+    const btn = document.getElementById('copy-btn');
+    btn.textContent = 'Copied ✓';
+    setTimeout(() => btn.textContent = 'Copy', 2000);
+  } catch (e) {}
+}
+
+// Auto-load on open
+refresh();
+</script>
+</body>
+</html>
